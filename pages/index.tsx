@@ -1,19 +1,12 @@
-// import type { NextPage } from 'next'
 import { useState } from 'react'
 import {
   Container,
   Center,
   PasswordInput,
   TextInput,
-  Text,
-  Group,
-  SimpleGrid,
-  Anchor,
-  Grid,
   Button,
   Space,
   Paper,
-  Alert
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications';
 
@@ -21,13 +14,20 @@ const radius = "lg"
 const size = "md"
 
 const Home = () => {
-  const [username, setUsername] = useState('test')
-  const [password, setPassword] = useState('test')
+  const [formData, setFormData] = useState({ username: 'test', password: 'test' })
 
-  const handleButton = () => {
+  const handleInputChange = (event: any) => {
+    console.log(event.target.name)
+    setFormData(prevData => ({
+        ...prevData,
+        [event.target.name]: event.target.value
+      }))
+  }
+
+  const handleButton = (e: any) => {
     showNotification({
-      title: 'Default notification',
-      message: 'Hey there, your code is awesome! 🤥',
+      title: 'Got user data',
+      message: JSON.stringify(formData),
     })
   }
 
@@ -41,10 +41,11 @@ const Home = () => {
 
         <TextInput
           placeholder="login"
-          id="your-login"
+          name="username"
           radius={radius}
           size={size}
-          value={username}
+          value={formData.username}
+          onChange={handleInputChange}
           withAsterisk
         />
 
@@ -52,10 +53,11 @@ const Home = () => {
 
         <PasswordInput
           placeholder="password"
-          id="your-password"
+          name="password"
           radius={radius}
           size={size}
-          value={password}
+          value={formData.password}
+          onChange={handleInputChange}
           withAsterisk
         />
 
@@ -71,7 +73,7 @@ const Home = () => {
           >Let me in</Button>
         </Center>
       </Paper>
-    
+
     </Container>
   )
 }
