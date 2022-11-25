@@ -26,10 +26,9 @@ class AuthService {
                 console.log({ response })
                 if (response &&
                     response.data &&
-                    response.data.result &&
-                    response.data.result.access_token
+                    response.data.access_token
                     ) {
-                    return response.data.result.access_token
+                    return response.data.access_token
                 }
                 throw 'token not found'
             })

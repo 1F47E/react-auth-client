@@ -15,13 +15,16 @@ import {
   Text,
   Mark,
   Table,
-  useMantineTheme
+  Menu,
+  SimpleGrid,
+  Flex,
+  useMantineTheme,
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications';
 import { Prism } from '@mantine/prism';
 import jwtDecode, { JwtPayload } from "jwt-decode";
 import { ActionIcon, useMantineColorScheme } from '@mantine/core';
-import { IconSun, IconMoonStars } from '@tabler/icons';
+import { IconSun, IconMoonStars, IconLogout, IconUser } from '@tabler/icons';
 import dayjs from 'dayjs';
 
 
@@ -35,26 +38,31 @@ const size = "md"
 
 // check token, return JwtPayload
 // const checkToken = async (token: string) => {
-const checkToken = (token: string): User | null => {
+const checkToken = (token: string): JwtPayload | null => {
   console.log('decoding token: ', token);
   try {
     const decodedHeader = jwtDecode<JwtPayload>(token, { header: true });
     const decodedPayload = jwtDecode<JwtPayload>(token, { header: false });
     console.log('decodedHeader: ', decodedHeader);
     console.log('decodedPayload: ', decodedPayload);
-    return decodedPayload as User;
+    return decodedPayload;
   } catch (error) {
     console.log('error: ', error);
     return null;
   }
 }
 
-// create type user extend JwtPayload
+// // create type user extend JwtPayload
 type User = JwtPayload & {
   name: string;
   type: string;
 }
 
+type TokenDecoded = {
+  header: JwtPayload;
+  body: JwtPayload;
+  signature: string;
+}
 
 const Home = () => {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
@@ -63,14 +71,20 @@ const Home = () => {
 
   const [formData, setFormData] = useState({ username: '5550000001', password: 'qwerty1' })
   const [token, setToken] = useState('')
-  const [user, setUser] = useState<User | null>(null)
+  // tokenData
+  const [user, setUser] = useState<JwtPayload | null>(null)
+  // tokenHeader
+  const [tokenHeader, setTokenHeader] = useState<JwtPayload | null>(null)
 
   // load token on page load
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (token) {
       setToken(token)
-      setUser(checkToken(token))
+      const decodedHeader = jwtDecode<JwtPayload>(token, { header: true });
+      setTokenHeader(decodedHeader)
+      const decodedBody = jwtDecode<JwtPayload>(token, { header: false });
+      setUser(decodedBody)
     }
   }, [])
 
@@ -93,9 +107,11 @@ const Home = () => {
     AuthService.doLogin(formData.username, formData.password).then(
       (data) => {
         setToken(data);
-        // decode and set user (jwt payload data)
-        // decoded data can be null
-        setUser(checkToken(data))
+        const decodedHeader = jwtDecode<JwtPayload>(data, { header: true });
+        setTokenHeader(decodedHeader)
+        const decodedBody = jwtDecode<JwtPayload>(data, { header: false });
+        setUser(decodedBody)
+
 
         // save token to localstorage
         if (typeof window !== 'undefined') {
@@ -145,7 +161,11 @@ const Home = () => {
     if (decoded) {
       message = JSON.stringify(decoded)
       // color = 'green'
-      setUser(decoded)
+      const decodedHeader = jwtDecode<JwtPayload>(token, { header: true });
+      setTokenHeader(decodedHeader)
+      const decodedBody = jwtDecode<JwtPayload>(token, { header: false });
+      setUser(decodedBody)
+
     } else {
       message = `Invalid token`
       color = 'red'
@@ -159,15 +179,41 @@ const Home = () => {
 
   return (
     <>
-      <Group position="right" sx={{ padding: 10, margin: 10 }}>
-        <Switch
-          size="md"
-          color={dark ? 'gray' : 'dark'}
-          onLabel={<IconSun size={16} stroke={2.5} color={theme.colors.yellow[4]} />}
-          offLabel={<IconMoonStars size={16} stroke={2.5} color={theme.colors.blue[6]} />}
-          onClick={() => toggleColorScheme()}
-        />
-      </Group>
+      <Flex
+        mih={50}
+        bg="rgba(0, 0, 0, .3)"
+        gap="md"
+        justify="space-between"
+        align="flex-start"
+        direction="row"
+        wrap="wrap"
+      >
+
+        <Group position="right" sx={{ padding: 10, margin: 10 }}>
+          <Switch
+            size="md"
+            color={dark ? 'gray' : 'dark'}
+            onLabel={<IconSun size={16} stroke={2.5} color={theme.colors.yellow[4]} />}
+            offLabel={<IconMoonStars size={16} stroke={2.5} color={theme.colors.blue[6]} />}
+            onClick={() => toggleColorScheme()}
+          />
+        </Group>
+
+        {user &&
+          <Group position="left" sx={{ padding: 10, margin: 10 }}>
+            <Menu width={200}>
+              <Menu.Target>
+                <Button>user</Button>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Label>Application</Menu.Label>
+                <Menu.Item color="red" icon={<IconLogout size={14} />} onClick={handleButtonLogout}>Logout</Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+        }
+      </Flex>
 
       {!token &&
         <Container size={420} my={40}>
@@ -223,17 +269,13 @@ const Home = () => {
                 <Center>
                   <Table striped highlightOnHover sx={{ maxWidth: 320 }}>
                     <tbody>
-                      <tr key='id'>
-                        <td>Id</td>
+                      <tr key='uid'>
+                        <td>User id</td>
                         <td>{user.sub}</td>
-                      </tr>
-                      <tr key='name'>
-                        <td>Name</td>
-                        <td>{user.name}</td>
                       </tr>
                       <tr key='type'>
                         <td>Type</td>
-                        <td>{user.type}</td>
+                        <td>{user.jti}</td>
                       </tr>
                       <tr key='iat'>
                         <td>Issued at</td>
@@ -251,6 +293,12 @@ const Home = () => {
 
                 <Prism language="json">
                   {JSON.stringify(user)}
+                </Prism>
+
+                <Space h="xl" />
+
+                <Prism language="json">
+                  {JSON.stringify(tokenHeader)}
                 </Prism>
               </Paper>
             }
@@ -281,14 +329,6 @@ const Home = () => {
               </Center>
             </Paper>
           </Container>
-          <Group position="right" sx={{ padding: 10, margin: 10 }}>
-            <Button
-              radius={radius}
-              size="sm"
-              color="pink"
-              onClick={handleButtonLogout}
-            >Logout</Button>
-          </Group>
         </>
       }
 
