@@ -3,18 +3,12 @@
 import client from "./client"
 
 const API_ENDPOINT_LOGIN = "/auth/signin";
-// const API_ENDPOINT_LOGOUT = "/auth/logout";
-// const API_ENDPOINT_SIGNUP = "/auth/signup";
+const API_ENDPOINT_SIGNUP = "/auth/signup";
+const API_ENDPOINT_VERIFY = "/token/verify";
+const API_ENDPOINT_REFRESH = "/token/refresh";
 
 class AuthService {
-    // example response
-    // {
-    //     "error": false,
-    //     "result": {
-    //         "access_token": "eyJh..."
-    //     },
-    //     "success": true
-    // }
+
     async doLogin(username: string, password: string): Promise<any> {
         return client
             .post(API_ENDPOINT_LOGIN, {

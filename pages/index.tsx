@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
+  Title,
   Container,
   Center,
   PasswordInput,
@@ -64,14 +65,18 @@ type TokenDecoded = {
   signature: string;
 }
 
+const formDataDefault = { username: '5550000001', password: 'qwerty1' }
+
 const Home = () => {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === 'dark';
   const theme = useMantineTheme()
 
-  const [formData, setFormData] = useState({ username: '5550000001', password: 'qwerty1' })
+  const [mode, setMode] = useState('signin');
+  const [formData, setFormData] = useState(formDataDefault)
   const [token, setToken] = useState('')
   // tokenData
+  // TODO: refactor all token data to one obj
   const [user, setUser] = useState<JwtPayload | null>(null)
   // tokenHeader
   const [tokenHeader, setTokenHeader] = useState<JwtPayload | null>(null)
@@ -100,8 +105,16 @@ const Home = () => {
     }))
   }
 
-
   // api call on form submit
+  const handleButtonSignup = (e: any) => {
+    console.log(JSON.stringify(formData))
+    showNotification({
+      color: 'orange',
+      title: 'WIP',
+      message: 'Signup is not implemented yet',
+    })
+  }
+
   function handleButtonLogin(e: any) {
     console.log(JSON.stringify(formData))
     AuthService.doLogin(formData.username, formData.password).then(
@@ -111,7 +124,6 @@ const Home = () => {
         setTokenHeader(decodedHeader)
         const decodedBody = jwtDecode<JwtPayload>(data, { header: false });
         setUser(decodedBody)
-
 
         // save token to localstorage
         if (typeof window !== 'undefined') {
@@ -177,6 +189,16 @@ const Home = () => {
     }
   }
 
+  const handleButtonMode = (e: any) => {
+    if (mode === 'signin') {
+      setMode('signup')
+      setFormData({ username: '', password: '' })
+    } else {
+      setMode('signin')
+      setFormData(formDataDefault)
+    }
+  }
+
   return (
     <>
       <Flex
@@ -203,7 +225,7 @@ const Home = () => {
           <Group position="left" sx={{ padding: 10, margin: 10 }}>
             <Menu width={200}>
               <Menu.Target>
-                <Button>user</Button>
+                <Button>Hello!</Button>
               </Menu.Target>
 
               <Menu.Dropdown>
@@ -216,49 +238,68 @@ const Home = () => {
       </Flex>
 
       {!token &&
-        <Container size={420} my={40}>
+        <>
+          <Container size={420} my={40}>
 
-          <Paper
-            p={50} mt={30}
-            radius="md"
-          >
+            <Paper p={50} mt={30} radius="md">
+              <Group position="right" >
+                <Button variant="subtle" radius="lg" size="xs" compact onClick={handleButtonMode}>
+                  {mode === 'signin' ? `Create account` : `I already have account`}
+                </Button>
+              </Group>
+              <Space h="xl" />
 
-            <TextInput
-              placeholder="login"
-              name="username"
-              radius={radius}
-              size={size}
-              value={formData.username}
-              onChange={handleInputChange}
-              withAsterisk
-            />
-
-            <Space h="xl" />
-
-            <PasswordInput
-              placeholder="password"
-              name="password"
-              radius={radius}
-              size={size}
-              value={formData.password}
-              onChange={handleInputChange}
-              withAsterisk
-            />
-
-            <Center>
-              <Button
-                variant="gradient"
-                gradient={{ from: 'indigo', to: 'blue', deg: 105 }}
+              <TextInput
+                placeholder="login"
+                name="username"
                 radius={radius}
                 size={size}
-                mt="xl"
-                fullWidth
-                onClick={handleButtonLogin}
-              >Let me in</Button>
-            </Center>
-          </Paper>
+                value={formData.username}
+                onChange={handleInputChange}
+                withAsterisk
+              />
 
-        </Container>
+              <Space h="xl" />
+
+              <PasswordInput
+                placeholder="password"
+                name="password"
+                radius={radius}
+                size={size}
+                value={formData.password}
+                onChange={handleInputChange}
+                withAsterisk
+              />
+
+              <Center>
+                {mode === 'signin' ?
+                  <Button
+                    variant="gradient"
+                    gradient={{ from: 'indigo', to: 'blue', deg: 105 }}
+                    radius={radius}
+                    size={size}
+                    mt="xl"
+                    fullWidth
+                    onClick={handleButtonLogin}
+                  >Let me in</Button>
+                  :
+                  <Button
+                    variant="gradient"
+                    gradient={{ from: 'indigo', to: 'pink', deg: 105 }}
+                    radius={radius}
+                    size={size}
+                    mt="xl"
+                    fullWidth
+                    onClick={handleButtonSignup}
+                  >Sign me up!</Button>
+                }
+
+              </Center>
+            </Paper>
+
+
+          </Container>
+        </>
       }
 
       {token &&
