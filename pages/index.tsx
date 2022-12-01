@@ -21,13 +21,20 @@ import {
   Flex,
   Overlay,
   LoadingOverlay,
+  Anchor,
   useMantineTheme,
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications';
 import { Prism } from '@mantine/prism';
 import jwtDecode, { JwtPayload } from "jwt-decode";
 import { ActionIcon, useMantineColorScheme } from '@mantine/core';
-import { IconSun, IconMoonStars, IconLogout, IconUser } from '@tabler/icons';
+import {
+  IconSun,
+  IconMoonStars,
+  IconLogout,
+  IconUser,
+  IconBrandGithub
+} from '@tabler/icons';
 import dayjs from 'dayjs';
 
 
@@ -111,7 +118,7 @@ const Home = () => {
 
 
   const handleAuth = (e: any) => {
-  // function handleAuth() {
+    // function handleAuth() {
     console.log(JSON.stringify(formData))
     setIsLoading(true);
     AuthService.doAuth(formData.username, formData.password, mode).then(
@@ -139,6 +146,8 @@ const Home = () => {
           title: 'Success!',
           message: 'You have been logged in successfully',
         })
+        // reset mode to sign-in so after logout user can sign-in again
+        setMode('signin');
       },
       error => {
         setIsLoading(false);
@@ -388,6 +397,26 @@ const Home = () => {
           </Container>
         </>
       }
+      <Flex sx={{ height: '100%', minHeight: '420px', width: '100%', minWidth: '500px', justifyContent: 'center' }}>
+        <Center>
+          <Group>
+
+              <Group>
+                <IconBrandGithub size={14} />
+                <Anchor href="https://github.com/kaspar1ndustries/react-auth-client" target="_blank" size={14}>
+                  Frontend, React
+                </Anchor>
+              </Group>
+              <Group>
+                <IconBrandGithub size={14} />
+                <Anchor href="https://github.com/kaspar1ndustries/rust-service-auth" target="_blank" size={14}>
+                  Backend, Rust
+                </Anchor>
+              </Group>
+          </Group>
+
+        </Center>
+      </Flex>
 
     </>
   )
