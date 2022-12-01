@@ -6,12 +6,14 @@ const API_ENDPOINT_LOGIN = "/auth/signin";
 const API_ENDPOINT_SIGNUP = "/auth/signup";
 const API_ENDPOINT_VERIFY = "/token/verify";
 const API_ENDPOINT_REFRESH = "/token/refresh";
-
+// type AuthType = 'login' | 'signup'
 class AuthService {
 
-    async doLogin(username: string, password: string): Promise<any> {
+    // create enum type login or signup
+    async doAuth(username: string, password: string, auth: string ): Promise<any> {
+        const apiUrl = auth === 'signin' ? API_ENDPOINT_LOGIN : API_ENDPOINT_SIGNUP;
         return client
-            .post(API_ENDPOINT_LOGIN, {
+            .post(apiUrl, {
                 username,
                 password
             })

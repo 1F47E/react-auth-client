@@ -33,7 +33,7 @@ import dayjs from 'dayjs';
 
 import AuthService from '../services/api';
 
-const radius = "lg"
+const radius = "md"
 const size = "md"
 
 
@@ -109,20 +109,12 @@ const Home = () => {
     }))
   }
 
-  // api call on form submit
-  const handleButtonSignup = (e: any) => {
-    console.log(JSON.stringify(formData))
-    showNotification({
-      color: 'orange',
-      title: 'WIP',
-      message: 'Signup is not implemented yet',
-    })
-  }
 
-  function handleButtonLogin(e: any) {
+  const handleAuth = (e: any) => {
+  // function handleAuth() {
     console.log(JSON.stringify(formData))
     setIsLoading(true);
-    AuthService.doLogin(formData.username, formData.password).then(
+    AuthService.doAuth(formData.username, formData.password, mode).then(
       (data) => {
         setToken(data);
         const decodedHeader = jwtDecode<JwtPayload>(data, { header: true });
@@ -134,6 +126,13 @@ const Home = () => {
         // save token to localstorage
         if (typeof window !== 'undefined') {
           localStorage.setItem('access_token', data)
+        }
+        if (mode === 'signup') {
+          showNotification({
+            color: 'green',
+            title: 'Welcome!',
+            message: 'New user created',
+          })
         }
         showNotification({
           color: 'green',
@@ -165,13 +164,6 @@ const Home = () => {
     })
   }
 
-  const handleButton = (e: any) => {
-    showNotification({
-      title: 'Got user data',
-      message: JSON.stringify(formData),
-    })
-  }
-
   const handleButtonToken = (e: any) => {
     const decoded = checkToken(token)
 
@@ -199,10 +191,15 @@ const Home = () => {
   const handleButtonMode = (e: any) => {
     if (mode === 'signin') {
       setMode('signup')
-      setFormData({ username: '', password: '' })
+      // do not reset if username and password are set
+      if (formData.username === formDataDefault.username && formData.password === formDataDefault.password) {
+        setFormData({ username: '', password: '' })
+      }
     } else {
       setMode('signin')
-      setFormData(formDataDefault)
+      if (formData.username === formDataDefault.username && formData.password === formDataDefault.password) {
+        setFormData(formDataDefault)
+      }
     }
   }
 
@@ -296,7 +293,7 @@ const Home = () => {
                       size={size}
                       mt="xl"
                       fullWidth
-                      onClick={handleButtonLogin}
+                      onClick={handleAuth}
                       disabled={isLoading}
                     >Let me in</Button>
                     :
@@ -307,8 +304,8 @@ const Home = () => {
                       size={size}
                       mt="xl"
                       fullWidth
-                      onClick={handleButtonSignup}
-                      disabled={isLoading}
+                      onClick={handleAuth}
+                      disabled={isLoading || !formData.username || !formData.password}
                     >Sign me up!</Button>
                   }
 
