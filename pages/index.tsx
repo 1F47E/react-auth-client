@@ -19,6 +19,8 @@ import {
   Menu,
   SimpleGrid,
   Flex,
+  Overlay,
+  LoadingOverlay,
   useMantineTheme,
 } from '@mantine/core'
 import { showNotification } from '@mantine/notifications';
@@ -72,6 +74,8 @@ const Home = () => {
   const dark = colorScheme === 'dark';
   const theme = useMantineTheme()
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const [mode, setMode] = useState('signin');
   const [formData, setFormData] = useState(formDataDefault)
   const [token, setToken] = useState('')
@@ -117,6 +121,7 @@ const Home = () => {
 
   function handleButtonLogin(e: any) {
     console.log(JSON.stringify(formData))
+    setIsLoading(true);
     AuthService.doLogin(formData.username, formData.password).then(
       (data) => {
         setToken(data);
@@ -124,6 +129,7 @@ const Home = () => {
         setTokenHeader(decodedHeader)
         const decodedBody = jwtDecode<JwtPayload>(data, { header: false });
         setUser(decodedBody)
+        setIsLoading(false);
 
         // save token to localstorage
         if (typeof window !== 'undefined') {
@@ -136,6 +142,7 @@ const Home = () => {
         })
       },
       error => {
+        setIsLoading(false);
         showNotification({
           color: 'red',
           title: 'Login error',
@@ -210,6 +217,7 @@ const Home = () => {
         direction="row"
         wrap="wrap"
       >
+        {/* {visible && <Overlay opacity={0.6} color="#000" zIndex={5}  blur={4} />} */}
 
         <Group position="right" sx={{ padding: 10, margin: 10 }}>
           <Switch
@@ -240,61 +248,72 @@ const Home = () => {
       {!token &&
         <>
           <Container size={420} my={40}>
-
             <Paper p={50} mt={30} radius="md">
-              <Group position="right" >
-                <Button variant="subtle" radius="lg" size="xs" compact onClick={handleButtonMode}>
-                  {mode === 'signin' ? `Create account` : `I already have account`}
-                </Button>
-              </Group>
-              <Space h="xl" />
 
-              <TextInput
-                placeholder="login"
-                name="username"
-                radius={radius}
-                size={size}
-                value={formData.username}
-                onChange={handleInputChange}
-                withAsterisk
-              />
 
-              <Space h="xl" />
+              <div style={{ width: 400, position: 'relative' }}>
+                {isLoading && <LoadingOverlay
+                  loaderProps={{ size: 'md', color: 'blue', variant: 'bars' }}
+                  overlayOpacity={0.5}
+                  overlayColor={theme.colors.dark[7]}
+                  transitionDuration={500}
+                  visible
+                />}
+                <Group position="right" >
+                  <Button variant="subtle" radius="lg" size="xs" compact onClick={handleButtonMode}>
+                    {mode === 'signin' ? `Create account` : `I already have account`}
+                  </Button>
+                </Group>
+                <Space h="xl" />
+                <TextInput
+                  placeholder="login"
+                  name="username"
+                  radius={radius}
+                  size={size}
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  withAsterisk
+                />
 
-              <PasswordInput
-                placeholder="password"
-                name="password"
-                radius={radius}
-                size={size}
-                value={formData.password}
-                onChange={handleInputChange}
-                withAsterisk
-              />
+                <Space h="xl" />
 
-              <Center>
-                {mode === 'signin' ?
-                  <Button
-                    variant="gradient"
-                    gradient={{ from: 'indigo', to: 'blue', deg: 105 }}
-                    radius={radius}
-                    size={size}
-                    mt="xl"
-                    fullWidth
-                    onClick={handleButtonLogin}
-                  >Let me in</Button>
-                  :
-                  <Button
-                    variant="gradient"
-                    gradient={{ from: 'indigo', to: 'pink', deg: 105 }}
-                    radius={radius}
-                    size={size}
-                    mt="xl"
-                    fullWidth
-                    onClick={handleButtonSignup}
-                  >Sign me up!</Button>
-                }
+                <PasswordInput
+                  placeholder="password"
+                  name="password"
+                  radius={radius}
+                  size={size}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  withAsterisk
+                />
 
-              </Center>
+                <Center>
+                  {mode === 'signin' ?
+                    <Button
+                      variant="gradient"
+                      gradient={{ from: 'indigo', to: 'grape', deg: 50 }}
+                      radius={radius}
+                      size={size}
+                      mt="xl"
+                      fullWidth
+                      onClick={handleButtonLogin}
+                      disabled={isLoading}
+                    >Let me in</Button>
+                    :
+                    <Button
+                      variant="gradient"
+                      gradient={{ from: 'grape', to: 'indigo', deg: 50 }}
+                      radius={radius}
+                      size={size}
+                      mt="xl"
+                      fullWidth
+                      onClick={handleButtonSignup}
+                      disabled={isLoading}
+                    >Sign me up!</Button>
+                  }
+
+                </Center>
+              </div>
             </Paper>
 
 
